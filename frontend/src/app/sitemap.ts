@@ -17,7 +17,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     .select('slug, created_at')
     .eq('is_active', true)
 
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://cosmo.com'
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://aichapara.tn'
 
   const staticPages = [
     {

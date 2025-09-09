@@ -10,9 +10,10 @@ export function Footer() {
             <div className="flex items-center space-x-2">
               <div className="w-8 h-8 bg-gradient-to-r from-pink-500 to-purple-600 rounded-full"></div>
               <span className="text-xl font-bold">Cosmo</span>
+              <span className="text-xl font-bold">Aicha Para</span>
             </div>
             <p className="text-gray-400 text-sm">
-              Your premier destination for high-quality cosmetics and beauty products.
+              Your premier destination for high-quality beauty and cosmetics products in Tunisia.
             </p>
           </div>
 
@@ -82,7 +83,7 @@ export function Footer() {
         </div>
 
         <div className="border-t border-gray-800 mt-8 pt-8 text-center text-sm text-gray-400">
-          <p>&copy; 2025 Cosmo. All rights reserved.</p>
+          <p>&copy; 2025 Aicha Para. All rights reserved.</p>
         </div>
       </div>
     </footer>

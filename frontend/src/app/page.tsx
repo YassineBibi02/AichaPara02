@@ -41,12 +41,12 @@ export default async function HomePage() {
             <div className="space-y-8">
               <div className="space-y-4">
                 <h1 className="text-4xl lg:text-6xl font-bold text-gray-900 leading-tight">
-                  Winter Sale
+                  Beauty Sale
                   <br />
-                  <span className="text-pink-600">Collections</span>
+                  <span className="text-pink-600">Up to 50% Off</span>
                 </h1>
                 <p className="text-lg text-gray-600 max-w-md">
-                  Sale! Up to 50% off!
+                  Discover premium beauty products at unbeatable prices.
                 </p>
               </div>
               <Link href="/store">

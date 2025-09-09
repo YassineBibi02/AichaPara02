@@ -1,10 +1,12 @@
+export type Role = 'client' | 'admin' | 'superadmin'
+
 export interface User {
   id: string
   email: string
   first_name?: string
   last_name?: string
   phone?: string
-  role: 'client' | 'admin' | 'superadmin'
+  role: Role
 }
 
 export interface Category {

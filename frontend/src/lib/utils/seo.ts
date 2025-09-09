@@ -19,8 +19,8 @@ export function generateSEO({
   price,
   currency = 'TND'
 }: SEOProps): Metadata {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://cosmo.com'
-  const fullTitle = title.includes('Cosmo') ? title : `${title} - Cosmo`
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://aichapara.tn'
+  const fullTitle = title.includes('Aicha Para') ? title : `${title} - Aicha Para`
   
   const metadata: Metadata = {
     title: fullTitle,
@@ -29,7 +29,7 @@ export function generateSEO({
       title: fullTitle,
       description,
       type,
-      siteName: 'Cosmo',
+      siteName: 'Aicha Para',
       images: image ? [{ url: image, width: 1200, height: 630 }] : [],
     },
     twitter: {
@@ -54,7 +54,7 @@ export function generateSEO({
 }
 
 export function generateProductJsonLd(product: any) {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://cosmo.com'
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://aichapara.tn'
   
   return {
     '@context': 'https://schema.org',
@@ -64,7 +64,7 @@ export function generateProductJsonLd(product: any) {
     image: product.image_url,
     brand: {
       '@type': 'Brand',
-      name: 'Cosmo'
+      name: 'Aicha Para'
     },
     offers: {
       '@type': 'Offer',
@@ -75,7 +75,7 @@ export function generateProductJsonLd(product: any) {
         : 'https://schema.org/InStock',
       seller: {
         '@type': 'Organization',
-        name: 'Cosmo',
+        name: 'Aicha Para',
         url: baseUrl
       }
     },

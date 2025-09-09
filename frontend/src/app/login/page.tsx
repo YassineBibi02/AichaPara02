@@ -15,6 +15,7 @@ export default function LoginPage() {
   const [error, setError] = useState('')
   const [formData, setFormData] = useState({
     email: '',
+    phone: '',
     password: '',
   })
 
@@ -75,6 +76,14 @@ export default function LoginPage() {
               value={formData.email}
               onChange={handleChange}
               placeholder="Enter your email"
+            />
+            <Input
+              label="Phone number (optional)"
+              name="phone"
+              type="tel"
+              value={formData.phone}
+              onChange={handleChange}
+              placeholder="Enter your phone number"
             />
             <Input
               label="Password"

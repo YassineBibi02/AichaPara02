@@ -17,6 +17,7 @@ export default function RegisterPage() {
     firstName: '',
     lastName: '',
     email: '',
+    phone: '',
     password: '',
     confirmPassword: '',
   })
@@ -42,7 +43,8 @@ export default function RegisterPage() {
       formData.email,
       formData.password,
       formData.firstName,
-      formData.lastName
+      formData.lastName,
+      formData.phone
     )
     
     if (error) {
@@ -51,9 +53,9 @@ export default function RegisterPage() {
     } else {
       setSuccess(true)
       setLoading(false)
-      // Redirect to login or home after successful registration
+      // Redirect to email confirmation page
       setTimeout(() => {
-        router.push('/')
+        router.push(`/confirm-email?email=${encodeURIComponent(formData.email)}`)
       }, 2000)
     }
   }
@@ -77,7 +79,7 @@ export default function RegisterPage() {
             </div>
             <h2 className="text-2xl font-bold text-gray-900 mb-2">Account Created!</h2>
             <p className="text-gray-600">
-              Welcome to Cosmo! You can now start shopping for premium beauty products.
+              Welcome to Aicha Para! Please check your email to confirm your account.
             </p>
           </div>
         </div>
@@ -140,6 +142,14 @@ export default function RegisterPage() {
               value={formData.email}
               onChange={handleChange}
               placeholder="Enter your email"
+            />
+            <Input
+              label="Phone number"
+              name="phone"
+              type="tel"
+              value={formData.phone}
+              onChange={handleChange}
+              placeholder="Enter your phone number"
             />
             <Input
               label="Password"

@@ -16,8 +16,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Cosmo - Premium Cosmetics & Beauty Products",
-  description: "Discover premium cosmetics and beauty products. Shop skincare, makeup, fragrance and more with fast shipping across Tunisia.",
+  title: "Aicha Para - Premium Beauty & Cosmetics Products",
+  description: "Discover premium beauty and cosmetics products at Aicha Para. Shop skincare, makeup, fragrance and more with fast shipping across Tunisia.",
 };
 
 export default function RootLayout({

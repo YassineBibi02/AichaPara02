@@ -1,0 +1,123 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  client
+  admin
+  superadmin
+}
+
+model Profile {
+  id         String   @id @db.Uuid
+  firstName  String?  @map("first_name")
+  lastName   String?  @map("last_name")
+  phone      String?
+  role       Role     @default(client)
+  createdAt  DateTime @default(now()) @map("created_at")
+  
+  // Relations
+  reviews    Review[]
+  orders     Order[]
+
+  @@map("profiles")
+}
+
+model Category {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name      String
+  slug      String   @unique
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  
+  // Relations
+  products  Product[]
+
+  @@map("categories")
+}
+
+model Product {
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name          String
+  slug          String   @unique
+  description   String?
+  price         Decimal  @db.Decimal(12, 3)
+  discountPrice Decimal? @map("discount_price") @db.Decimal(12, 3)
+  isDiscount    Boolean  @default(false) @map("is_discount")
+  isFeature     Boolean  @default(false) @map("is_feature")
+  isActive      Boolean  @default(true) @map("is_active")
+  isDraft       Boolean  @default(false) @map("is_draft")
+  categoryId    String?  @map("category_id") @db.Uuid
+  imageUrl      String?  @map("image_url")
+  stock         Int      @default(0)
+  isStock       Boolean  @default(true) @map("is_stock")
+  variation1    String?
+  variation2    String?
+  rating        Decimal  @default(0) @db.Decimal(2, 1)
+  reviewCount   Int      @default(0) @map("review_count")
+  createdAt     DateTime @default(now()) @map("created_at")
+  
+  // Relations
+  category      Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  reviews       Review[]
+
+  @@map("products")
+}
+
+model Review {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  productId String   @map("product_id") @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  rating    Int
+  comment   String?
+  createdAt DateTime @default(now()) @map("created_at")
+  
+  // Relations
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user      Profile @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("reviews")
+}
+
+model Order {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId       String?  @map("user_id") @db.Uuid
+  isGuest      Boolean  @default(false) @map("is_guest")
+  firstName    String   @map("first_name")
+  lastName     String   @map("last_name")
+  email        String
+  phone        String
+  addressLine1 String   @map("address_line1")
+  addressLine2 String?  @map("address_line2")
+  company      String?
+  postalCode   String   @map("postal_code")
+  city         String
+  cart         Json
+  paymentMethod String? @map("payment_method")
+  status       OrderStatus @default(PENDING)
+  subtotal     Decimal  @db.Decimal(12, 3)
+  shippingFee  Decimal  @map("shipping_fee") @db.Decimal(12, 3)
+  total        Decimal  @db.Decimal(12, 3)
+  createdAt    DateTime @default(now()) @map("created_at")
+  
+  // Relations
+  user         Profile? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@map("orders")
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  FULFILLED
+  CANCELED
+  REFUNDED
+}

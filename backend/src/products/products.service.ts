@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { SupabaseService } from '../config/supabase.config';
+import { PrismaService } from '../prisma/prisma.service';
 
 export interface ProductFilters {
   search?: string;
@@ -15,10 +15,9 @@ export interface ProductFilters {
 
 @Injectable()
 export class ProductsService {
-  constructor(private supabaseService: SupabaseService) {}
+  constructor(private prisma: PrismaService) {}
 
   async findAll(filters: ProductFilters = {}) {
-    const supabase = this.supabaseService.getClient();
     const {
       search,
       category,
@@ -31,81 +30,78 @@ export class ProductsService {
       limit = 12,
     } = filters;
 
-    let query = supabase
-      .from('products')
-      .select(
-        `
-        *,
-        category:categories(name, slug)
-      `,
-        { count: 'exact' },
-      )
-      .eq('is_active', true)
-      .eq('is_draft', false);
+    const where: any = {
+      isActive: true,
+      isDraft: false,
+    };
 
     // Apply filters
     if (search) {
-      query = query.or(
-        `name.ilike.%${search}%,description.ilike.%${search}%`,
-      );
+      where.OR = [
+        { name: { contains: search, mode: 'insensitive' } },
+        { description: { contains: search, mode: 'insensitive' } },
+      ];
     }
 
     if (category) {
-      // First get category ID by slug
-      const { data: categoryData } = await supabase
-        .from('categories')
-        .select('id')
-        .eq('slug', category)
-        .single();
-
+      const categoryData = await this.prisma.category.findUnique({
+        where: { slug: category },
+        select: { id: true },
+      });
+      
       if (categoryData) {
-        query = query.eq('category_id', categoryData.id);
+        where.categoryId = categoryData.id;
       }
     }
 
     if (minPrice !== undefined) {
-      query = query.gte('price', minPrice);
+      where.price = { ...where.price, gte: minPrice };
     }
 
     if (maxPrice !== undefined) {
-      query = query.lte('price', maxPrice);
+      where.price = { ...where.price, lte: maxPrice };
     }
 
     if (inStock) {
-      query = query.eq('is_stock', true).gt('stock', 0);
+      where.isStock = true;
+      where.stock = { gt: 0 };
     }
 
     if (onSale) {
-      query = query.eq('is_discount', true);
+      where.isDiscount = true;
     }
 
-    // Apply sorting
+    let orderBy: any = {};
     switch (sortBy) {
       case 'price_asc':
-        query = query.order('price', { ascending: true });
+        orderBy = { price: 'asc' };
         break;
       case 'price_desc':
-        query = query.order('price', { ascending: false });
+        orderBy = { price: 'desc' };
         break;
       case 'rating':
-        query = query.order('rating', { ascending: false });
+        orderBy = { rating: 'desc' };
         break;
       case 'newest':
       default:
-        query = query.order('created_at', { ascending: false });
+        orderBy = { createdAt: 'desc' };
         break;
     }
 
-    // Apply pagination
-    const from = (page - 1) * limit;
-    const to = from + limit - 1;
-    query = query.range(from, to);
-
-    const { data, count, error } = await query;
-
-    if (error) {
-      throw new Error(`Failed to fetch products: ${error.message}`);
-    }
+    const [data, count] = await Promise.all([
+      this.prisma.product.findMany({
+        where,
+        include: {
+          category: {
+            select: { name: true, slug: true },
+          },
+        },
+        orderBy,
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+      this.prisma.product.count({ where }),
+    ]);
 
     return {
       data,
@@ -117,70 +113,58 @@ export class ProductsService {
   }
 
   async findBySlug(slug: string) {
-    const supabase = this.supabaseService.getClient();
+    const data = await this.prisma.product.findFirst({
+      where: {
+        slug,
+        isActive: true,
+        isDraft: false,
+      },
+      include: {
+        category: {
+          select: { name: true, slug: true },
+        },
+      },
+    });
 
-    const { data, error } = await supabase
-      .from('products')
-      .select(
-        `
-        *,
-        category:categories(name, slug)
-      `,
-      )
-      .eq('slug', slug)
-      .eq('is_active', true)
-      .eq('is_draft', false)
-      .single();
-
-    if (error) {
-      throw new Error(`Product not found: ${error.message}`);
+    if (!data) {
+      throw new Error('Product not found');
     }
 
     return data;
   }
 
   async findFeatured(limit = 8) {
-    const supabase = this.supabaseService.getClient();
-
-    const { data, error } = await supabase
-      .from('products')
-      .select(
-        `
-        *,
-        category:categories(name, slug)
-      `,
-      )
-      .eq('is_feature', true)
-      .eq('is_active', true)
-      .eq('is_draft', false)
-      .limit(limit);
-
-    if (error) {
-      throw new Error(`Failed to fetch featured products: ${error.message}`);
-    }
+    const data = await this.prisma.product.findMany({
+      where: {
+        isFeature: true,
+        isActive: true,
+        isDraft: false,
+      },
+      include: {
+        category: {
+          select: { name: true, slug: true },
+        },
+      },
+      take: limit,
+    });
 
     return data;
   }
 
   async findRecent(limit = 8) {
-    const supabase = this.supabaseService.getClient();
-
-    const { data, error } = await supabase
-      .from('products')
-      .select(
-        `
-        *,
-        category:categories(name, slug)
-      `,
-      )
-      .eq('is_active', true)
-      .eq('is_draft', false)
-      .order('created_at', { ascending: false })
-      .limit(limit);
-
-    if (error) {
-      throw new Error(`Failed to fetch recent products: ${error.message}`);
-    }
+    const data = await this.prisma.product.findMany({
+      where: {
+        isActive: true,
+        isDraft: false,
+      },
+      include: {
+        category: {
+          select: { name: true, slug: true },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+      take: limit,
+    });
 
     return data;
   }
