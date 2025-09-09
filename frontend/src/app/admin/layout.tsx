@@ -28,10 +28,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   if (!user) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Access Denied</h1>
-          <p className="text-gray-600 mb-6">You need to be logged in to access this page.</p>
+          <h1 className="text-2xl font-bold text-text-primary mb-4">Access Denied</h1>
+          <p className="text-text-secondary mb-6">You need to be logged in to access this page.</p>
           <Link href="/">
             <Button>Go Home</Button>
           </Link>
@@ -41,7 +41,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       {/* Mobile sidebar overlay */}
       {sidebarOpen && (
         <div className="fixed inset-0 z-40 lg:hidden">
@@ -96,12 +96,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                   {user.first_name?.[0] || user.email[0].toUpperCase()}
                 </div>
                 <div className="ml-3">
-                  <p className="text-sm font-medium text-gray-700">
+                  <p className="text-sm font-medium text-text-primary">
                     {user.first_name} {user.last_name}
                   </p>
                   <button
                     onClick={signOut}
-                    className="text-xs text-gray-500 hover:text-gray-700 flex items-center"
+                    className="text-xs text-text-secondary hover:text-text-primary flex items-center"
                   >
                     <LogOut className="h-3 w-3 mr-1" />
                     Sign out
@@ -119,7 +119,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <div className="flex-1 flex flex-col pt-5 pb-4 overflow-y-auto">
             <div className="flex items-center flex-shrink-0 px-4">
               <div className="w-8 h-8 bg-gradient-to-r from-pink-500 to-purple-600 rounded-full" />
-              <span className="ml-2 text-xl font-bold text-gray-900">Cosmo Admin</span>
+              <span className="ml-2 text-xl font-bold text-text-primary">Aicha Para Admin</span>
             </div>
             <nav className="mt-5 flex-1 px-2 space-y-1">
               {navigation.map((item) => (
@@ -150,12 +150,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 {user.first_name?.[0] || user.email[0].toUpperCase()}
               </div>
               <div className="ml-3 flex-1">
-                <p className="text-sm font-medium text-gray-700">
+                <p className="text-sm font-medium text-text-primary">
                   {user.first_name} {user.last_name}
                 </p>
                 <button
                   onClick={signOut}
-                  className="text-xs text-gray-500 hover:text-gray-700 flex items-center"
+                  className="text-xs text-text-secondary hover:text-text-primary flex items-center"
                 >
                   <LogOut className="h-3 w-3 mr-1" />
                   Sign out
@@ -171,7 +171,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <div className="sticky top-0 z-10 lg:hidden pl-1 pt-1 sm:pl-3 sm:pt-3 bg-gray-50">
           <button
             onClick={() => setSidebarOpen(true)}
-            className="-ml-0.5 -mt-0.5 h-12 w-12 inline-flex items-center justify-center rounded-md text-gray-500 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-pink-500"
+            className="-ml-0.5 -mt-0.5 h-12 w-12 inline-flex items-center justify-center rounded-md text-text-secondary hover:text-text-primary focus:outline-none focus:ring-2 focus:ring-inset focus:ring-pink-500"
             aria-label="Open sidebar"
           >
             <Menu className="h-6 w-6" />

@@ -74,4 +74,49 @@ export class ProfilesService {
 
     return data;
   }
+
+  async updateByAdmin(id: string, updateProfileDto: UpdateProfileDto, requestingUserRole?: string) {
+    if (!requestingUserRole || !['admin', 'superadmin'].includes(requestingUserRole)) {
+      throw new ForbiddenException('Access denied');
+    }
+
+    const supabase = this.supabaseService.getClient();
+
+    const { data, error } = await supabase
+      .from('profiles')
+      .update({
+        first_name: updateProfileDto.firstName,
+        last_name: updateProfileDto.lastName,
+        phone: updateProfileDto.phone,
+        role: updateProfileDto.role,
+      })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) {
+      throw new Error(`Failed to update profile: ${error.message}`);
+    }
+
+    return data;
+  }
+
+  async remove(id: string, requestingUserRole?: string) {
+    if (!requestingUserRole || !['admin', 'superadmin'].includes(requestingUserRole)) {
+      throw new ForbiddenException('Access denied');
+    }
+
+    const supabase = this.supabaseService.getClient();
+
+    const { error } = await supabase
+      .from('profiles')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      throw new Error(`Failed to delete profile: ${error.message}`);
+    }
+
+    return { message: 'Profile deleted successfully' };
+  }
 }

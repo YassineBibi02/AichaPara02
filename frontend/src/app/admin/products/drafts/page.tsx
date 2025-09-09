@@ -1,15 +1,24 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { DataTable } from '@/components/ui/organisms/DataTable'
 import { Badge } from '@/components/ui/atoms/Badge'
 import { Button } from '@/components/ui/atoms/Button'
+import { ConfirmDialog } from '@/components/ui/organisms/ConfirmDialog'
 import { Eye, Edit, Trash2, CheckCircle } from 'lucide-react'
 import { Product } from '@/lib/types'
 
 export default function DraftProductsPage() {
+  const router = useRouter()
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
+  const [deleteDialog, setDeleteDialog] = useState<{ isOpen: boolean; productId: string; productName: string }>({
+    isOpen: false,
+    productId: '',
+    productName: ''
+  })
+  const [deleting, setDeleting] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize, setPageSize] = useState(10)
   const [sortColumn, setSortColumn] = useState('created_at')
@@ -66,33 +75,38 @@ export default function DraftProductsPage() {
   ]
 
   useEffect(() => {
-    // Mock draft products data
-    const mockProducts: Product[] = [
-      {
-        id: '1',
-        name: 'New Serum (Draft)',
-        slug: 'new-serum-draft',
-        description: 'A new serum in development',
-        price: 89.99,
-        is_discount: false,
-        is_feature: false,
-        is_active: false,
-        is_draft: true,
-        category_id: 'cat1',
-        image_url: 'https://images.pexels.com/photos/4041392/pexels-photo-4041392.jpeg',
-        stock: 0,
-        is_stock: false,
-        rating: 0,
-        review_count: 0,
-        created_at: new Date().toISOString()
-      }
-    ]
-    
-    setTimeout(() => {
-      setProducts(mockProducts)
-      setLoading(false)
-    }, 1000)
+    fetchDraftProducts()
   }, [])
+
+  const fetchDraftProducts = async () => {
+    try {
+      const response = await fetch('/api/products/drafts')
+      const data = await response.json()
+      setProducts(data.data || [])
+    } catch (error) {
+      console.error('Error fetching draft products:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleDelete = async () => {
+    setDeleting(true)
+    try {
+      const response = await fetch(`/api/products/${deleteDialog.productId}`, {
+        method: 'DELETE',
+      })
+      
+      if (response.ok) {
+        setProducts(products.filter(p => p.id !== deleteDialog.productId))
+        setDeleteDialog({ isOpen: false, productId: '', productName: '' })
+      }
+    } catch (error) {
+      console.error('Error deleting product:', error)
+    } finally {
+      setDeleting(false)
+    }
+  }
 
   const renderRow = (product: Product) => (
     <>
@@ -110,7 +124,7 @@ export default function DraftProductsPage() {
       <td className="px-4 py-4">
         <div>
           <div className="font-medium">{product.name}</div>
-          <div className="text-sm text-gray-500">{product.slug}</div>
+          <div className="text-sm text-text-secondary">{product.slug}</div>
         </div>
       </td>
       <td className="px-4 py-4">
@@ -127,11 +141,18 @@ export default function DraftProductsPage() {
           <Button variant="outline" size="sm">
             <Eye className="w-4 h-4" />
           </Button>
+            onClick={() => router.push(`/admin/products/${product.id}`)}
+            onClick={() => router.push(`/admin/products/${product.id}?mode=edit`)}
           <Button variant="outline" size="sm">
-            <Edit className="w-4 h-4" />
+            variant="outline" 
           </Button>
+            onClick={() => setDeleteDialog({
+              isOpen: true,
+              productId: product.id,
+              productName: product.name
+            })}
           <Button variant="default" size="sm">
-            <CheckCircle className="w-4 h-4" />
+            <Trash2 className="w-4 h-4" />
           </Button>
         </div>
       </td>
@@ -141,8 +162,8 @@ export default function DraftProductsPage() {
   return (
     <div className="p-6">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Draft Products</h1>
-        <p className="text-gray-600">Manage products that are not yet published</p>
+        <h1 className="text-3xl font-bold text-text-primary">Draft Products</h1>
+        <p className="text-text-secondary">Manage products that are not yet published</p>
       </div>
 
       <DataTable
@@ -172,6 +193,17 @@ export default function DraftProductsPage() {
         bulkActions={bulkActions}
         renderRow={renderRow}
         emptyMessage="No draft products found"
+      />
+
+      <ConfirmDialog
+        isOpen={deleteDialog.isOpen}
+        onClose={() => setDeleteDialog({ isOpen: false, productId: '', productName: '' })}
+        onConfirm={handleDelete}
+        title="Delete Draft Product"
+        message={`Are you sure you want to delete "${deleteDialog.productName}"? This action cannot be undone.`}
+        confirmText="Delete"
+        variant="danger"
+        loading={deleting}
       />
     </div>
   )

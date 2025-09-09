@@ -117,4 +117,44 @@ export class OrdersService {
 
     return data;
   }
+
+  async update(id: string, updateOrderDto: any, userId?: string, userRole?: string) {
+    if (!userRole || !['admin', 'superadmin'].includes(userRole)) {
+      throw new ForbiddenException('Access denied');
+    }
+
+    const supabase = this.supabaseService.getClient();
+
+    const { data, error } = await supabase
+      .from('orders')
+      .update(updateOrderDto)
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) {
+      throw new Error(`Failed to update order: ${error.message}`);
+    }
+
+    return data;
+  }
+
+  async remove(id: string, userRole?: string) {
+    if (!userRole || !['admin', 'superadmin'].includes(userRole)) {
+      throw new ForbiddenException('Access denied');
+    }
+
+    const supabase = this.supabaseService.getClient();
+
+    const { error } = await supabase
+      .from('orders')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      throw new Error(`Failed to delete order: ${error.message}`);
+    }
+
+    return { message: 'Order deleted successfully' };
+  }
 }

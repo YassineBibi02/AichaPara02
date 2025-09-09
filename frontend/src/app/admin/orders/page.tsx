@@ -1,16 +1,23 @@
 'use client'
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { DataTable } from '@/components/ui/organisms/DataTable'
 import { Badge } from '@/components/ui/atoms/Badge'
 import { Button } from '@/components/ui/atoms/Button'
+import { ConfirmDialog } from '@/components/ui/organisms/ConfirmDialog'
 import { Eye, Download, Archive } from 'lucide-react'
 import { Order } from '@/lib/types'
-import { useRouter } from 'next/navigation'
 
 export default function AdminOrdersPage() {
   const router = useRouter()
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
+  const [deleteDialog, setDeleteDialog] = useState<{ isOpen: boolean; orderId: string; orderNumber: string }>({
+    isOpen: false,
+    orderId: '',
+    orderNumber: ''
+  })
+  const [deleting, setDeleting] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize, setPageSize] = useState(10)
   const [sortColumn, setSortColumn] = useState('created_at')
@@ -65,34 +72,39 @@ export default function AdminOrdersPage() {
     }
   ]
   useEffect(() => {
-    // Mock data for now
-    const mockOrders: Order[] = [
-      {
-        id: '1',
-        user_id: 'user1',
-        is_guest: false,
-        first_name: 'John',
-        last_name: 'Doe',
-        email: 'john@example.com',
-        phone: '+216 12 345 678',
-        address_line1: '123 Main St',
-        postal_code: '1000',
-        city: 'Tunis',
-        cart: [],
-        status: 'PENDING',
-        subtotal: 150.00,
-        shipping_fee: 8.00,
-        total: 158.00,
-        created_at: new Date().toISOString()
-      }
-    ]
-    
-    setTimeout(() => {
-      setOrders(mockOrders)
-      setLoading(false)
-    }, 1000)
+    fetchOrders()
   }, [])
   const getStatusColor = (status: string) => {
+  const fetchOrders = async () => {
+    try {
+      const response = await fetch('/api/orders')
+      const data = await response.json()
+      setOrders(data || [])
+    } catch (error) {
+      console.error('Error fetching orders:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleDelete = async () => {
+    setDeleting(true)
+    try {
+      const response = await fetch(`/api/orders/${deleteDialog.orderId}`, {
+        method: 'DELETE',
+      })
+      
+      if (response.ok) {
+        setOrders(orders.filter(o => o.id !== deleteDialog.orderId))
+        setDeleteDialog({ isOpen: false, orderId: '', orderNumber: '' })
+      }
+    } catch (error) {
+      console.error('Error deleting order:', error)
+    } finally {
+      setDeleting(false)
+    }
+  }
+
     switch (status) {
       case 'PENDING': return 'bg-yellow-100 text-yellow-800'
       case 'PAID': return 'bg-blue-100 text-blue-800'
@@ -125,22 +137,34 @@ export default function AdminOrdersPage() {
         {new Date(order.created_at).toLocaleDateString()}
       </td>
       <td className="px-4 py-4 text-right">
-        <Button 
-          variant="outline" 
-          size="sm"
-          onClick={() => router.push(`/admin/orders/${order.id}`)}
-        >
-          <Eye className="w-4 h-4 mr-2" />
-          View
-        </Button>
+        <div className="flex items-center gap-2 justify-end">
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => router.push(`/admin/orders/${order.id}`)}
+          >
+            <Eye className="w-4 h-4" />
+          </Button>
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => setDeleteDialog({
+              isOpen: true,
+              orderId: order.id,
+              orderNumber: `#${order.id.slice(-8)}`
+            })}
+          >
+            <Archive className="w-4 h-4" />
+          </Button>
+        </div>
       </td>
     </>
   )
   return (
     <div className="p-6">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Orders</h1>
-        <p className="text-gray-600">Manage customer orders</p>
+        <h1 className="text-3xl font-bold text-text-primary">Orders</h1>
+        <p className="text-text-secondary">Manage customer orders</p>
       </div>
       <DataTable
         data={orders}
@@ -169,6 +193,17 @@ export default function AdminOrdersPage() {
         bulkActions={bulkActions}
         renderRow={renderRow}
         emptyMessage="No orders found"
+      />
+
+      <ConfirmDialog
+        isOpen={deleteDialog.isOpen}
+        onClose={() => setDeleteDialog({ isOpen: false, orderId: '', orderNumber: '' })}
+        onConfirm={handleDelete}
+        title="Archive Order"
+        message={`Are you sure you want to archive order "${deleteDialog.orderNumber}"? This action cannot be undone.`}
+        confirmText="Archive"
+        variant="warning"
+        loading={deleting}
       />
     </div>
   )

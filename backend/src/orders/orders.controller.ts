@@ -1,6 +1,7 @@
-import { Controller, Get, Post, Body, Param, Request, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Body, Param, Request, UseGuards } from '@nestjs/common';
 import { OrdersService } from './orders.service';
 import { CreateOrderDto } from './dto/create-order.dto';
+import { UpdateOrderDto } from './dto/update-order.dto';
 import { AuthGuard } from '../auth/auth.guard';
 
 @Controller('orders')
@@ -33,5 +34,17 @@ export class OrdersController {
   @UseGuards(AuthGuard)
   async findById(@Param('id') id: string, @Request() req: any) {
     return this.ordersService.findById(id, req.user.id, req.user.role);
+  }
+
+  @Put(':id')
+  @UseGuards(AuthGuard)
+  async update(@Param('id') id: string, @Body() updateOrderDto: UpdateOrderDto, @Request() req: any) {
+    return this.ordersService.update(id, updateOrderDto, req.user.id, req.user.role);
+  }
+
+  @Delete(':id')
+  @UseGuards(AuthGuard)
+  async remove(@Param('id') id: string, @Request() req: any) {
+    return this.ordersService.remove(id, req.user.role);
   }
 }

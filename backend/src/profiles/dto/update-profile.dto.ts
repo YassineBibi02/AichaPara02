@@ -1,4 +1,4 @@
-import { IsString, IsOptional, IsPhoneNumber } from 'class-validator';
+import { IsString, IsOptional, IsIn } from 'class-validator';
 
 export class UpdateProfileDto {
   @IsOptional()
@@ -12,4 +12,8 @@ export class UpdateProfileDto {
   @IsOptional()
   @IsString()
   phone?: string;
+
+  @IsOptional()
+  @IsIn(['client', 'admin', 'superadmin'])
+  role?: string;
 }

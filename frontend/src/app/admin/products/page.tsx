@@ -1,14 +1,23 @@
 'use client'
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { DataTable } from '@/components/ui/organisms/DataTable'
 import { Badge } from '@/components/ui/atoms/Badge'
 import { Button } from '@/components/ui/atoms/Button'
+import { ConfirmDialog } from '@/components/ui/organisms/ConfirmDialog'
 import { Eye, Edit, Trash2, Plus } from 'lucide-react'
 import { Product } from '@/lib/types'
 import Link from 'next/link'
 export default function AdminProductsPage() {
+  const router = useRouter()
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
+  const [deleteDialog, setDeleteDialog] = useState<{ isOpen: boolean; productId: string; productName: string }>({
+    isOpen: false,
+    productId: '',
+    productName: ''
+  })
+  const [deleting, setDeleting] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize, setPageSize] = useState(10)
   const [sortColumn, setSortColumn] = useState('created_at')
@@ -72,36 +81,38 @@ export default function AdminProductsPage() {
     }
   ]
   useEffect(() => {
-    // Mock data for now
-    const mockProducts: Product[] = [
-      {
-        id: '1',
-        name: 'Luminance Brightening Cream',
-        slug: 'luminance-brightening-cream',
-        description: 'A brightening day cream',
-        price: 104.99,
-        discount_price: 45.50,
-        is_discount: true,
-        is_feature: true,
-        is_active: true,
-        is_draft: false,
-        category_id: 'cat1',
-        image_url: 'https://images.pexels.com/photos/3685530/pexels-photo-3685530.jpeg',
-        stock: 25,
-        is_stock: true,
-        variation1: '50ml',
-        variation2: 'Day Cream',
-        rating: 4.5,
-        review_count: 12,
-        created_at: new Date().toISOString()
-      }
-    ]
-    
-    setTimeout(() => {
-      setProducts(mockProducts)
-      setLoading(false)
-    }, 1000)
+    fetchProducts()
   }, [])
+  const fetchProducts = async () => {
+    try {
+      const response = await fetch('/api/products')
+      const data = await response.json()
+      setProducts(data.data || [])
+    } catch (error) {
+      console.error('Error fetching products:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleDelete = async () => {
+    setDeleting(true)
+    try {
+      const response = await fetch(`/api/products/${deleteDialog.productId}`, {
+        method: 'DELETE',
+      })
+      
+      if (response.ok) {
+        setProducts(products.filter(p => p.id !== deleteDialog.productId))
+        setDeleteDialog({ isOpen: false, productId: '', productName: '' })
+      }
+    } catch (error) {
+      console.error('Error deleting product:', error)
+    } finally {
+      setDeleting(false)
+    }
+  }
+
   const renderRow = (product: Product) => (
     <>
       <td className="px-4 py-4">
@@ -169,8 +180,8 @@ export default function AdminProductsPage() {
     <div className="p-6">
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Products</h1>
-          <p className="text-gray-600">Manage your product catalog</p>
+          <h1 className="text-3xl font-bold text-text-primary">Products</h1>
+          <p className="text-text-secondary">Manage your product catalog</p>
         </div>
         <div className="flex gap-2">
           <Link href="/admin/products/import">
@@ -212,6 +223,17 @@ export default function AdminProductsPage() {
         bulkActions={bulkActions}
         renderRow={renderRow}
         emptyMessage="No products found"
+      />
+
+      <ConfirmDialog
+        isOpen={deleteDialog.isOpen}
+        onClose={() => setDeleteDialog({ isOpen: false, productId: '', productName: '' })}
+        onConfirm={handleDelete}
+        title="Delete Product"
+        message={`Are you sure you want to delete "${deleteDialog.productName}"? This action cannot be undone.`}
+        confirmText="Delete"
+        variant="danger"
+        loading={deleting}
       />
     </div>
   )

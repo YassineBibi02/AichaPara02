@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { usePathname } from "next/navigation";
 import { AuthProvider } from "@/components/providers/auth-provider";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
@@ -15,16 +16,15 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  title: "Aicha Para - Premium Beauty & Cosmetics Products",
-  description: "Discover premium beauty and cosmetics products at Aicha Para. Shop skincare, makeup, fragrance and more with fast shipping across Tunisia.",
-};
 
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const pathname = usePathname()
+  const isAdminRoute = pathname?.startsWith('/admin')
+
   return (
     <html lang="en">
       <body
@@ -32,14 +32,15 @@ export default function RootLayout({
       >
         <AuthProvider>
           <div className="min-h-screen flex flex-col">
-            <Header />
+            {!isAdminRoute && <Header />}
             <main className="flex-1">
               {children}
             </main>
-            <Footer />
+            {!isAdminRoute && <Footer />}
           </div>
         </AuthProvider>
       </body>
     </html>
   );
 }
+'use client'

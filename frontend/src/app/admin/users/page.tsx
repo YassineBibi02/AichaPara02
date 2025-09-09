@@ -1,16 +1,23 @@
 'use client'
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { DataTable } from '@/components/ui/organisms/DataTable'
 import { Badge } from '@/components/ui/atoms/Badge'
 import { Button } from '@/components/ui/atoms/Button'
+import { ConfirmDialog } from '@/components/ui/organisms/ConfirmDialog'
 import { Eye, Edit, Shield, Ban } from 'lucide-react'
 import { User } from '@/lib/types'
-import { useRouter } from 'next/navigation'
 
 export default function AdminUsersPage() {
   const router = useRouter()
   const [users, setUsers] = useState<User[]>([])
   const [loading, setLoading] = useState(true)
+  const [deleteDialog, setDeleteDialog] = useState<{ isOpen: boolean; userId: string; userName: string }>({
+    isOpen: false,
+    userId: '',
+    userName: ''
+  })
+  const [deleting, setDeleting] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize, setPageSize] = useState(10)
   const [sortColumn, setSortColumn] = useState('created_at')
@@ -63,32 +70,39 @@ export default function AdminUsersPage() {
     }
   ]
   useEffect(() => {
-    // Mock users data
-    const mockUsers: User[] = [
-      {
-        id: '1',
-        email: 'john@example.com',
-        first_name: 'John',
-        last_name: 'Doe',
-        phone: '+216 12 345 678',
-        role: 'client'
-      },
-      {
-        id: '2',
-        email: 'admin@aichapara.tn',
-        first_name: 'Admin',
-        last_name: 'User',
-        phone: '+216 98 765 432',
-        role: 'admin'
-      }
-    ]
-    
-    setTimeout(() => {
-      setUsers(mockUsers)
-      setLoading(false)
-    }, 1000)
+    fetchUsers()
   }, [])
   const getRoleColor = (role: string) => {
+  const fetchUsers = async () => {
+    try {
+      const response = await fetch('/api/profiles')
+      const data = await response.json()
+      setUsers(data || [])
+    } catch (error) {
+      console.error('Error fetching users:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleDelete = async () => {
+    setDeleting(true)
+    try {
+      const response = await fetch(`/api/profiles/${deleteDialog.userId}`, {
+        method: 'DELETE',
+      })
+      
+      if (response.ok) {
+        setUsers(users.filter(u => u.id !== deleteDialog.userId))
+        setDeleteDialog({ isOpen: false, userId: '', userName: '' })
+      }
+    } catch (error) {
+      console.error('Error deleting user:', error)
+    } finally {
+      setDeleting(false)
+    }
+  }
+
     switch (role) {
       case 'superadmin': return 'bg-purple-100 text-purple-800'
       case 'admin': return 'bg-blue-100 text-blue-800'
@@ -134,6 +148,17 @@ export default function AdminUsersPage() {
           <Button variant="outline" size="sm">
             <Edit className="w-4 h-4" />
           </Button>
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => setDeleteDialog({
+              isOpen: true,
+              userId: user.id,
+              userName: `${user.first_name} ${user.last_name}`
+            })}
+          >
+            <Ban className="w-4 h-4" />
+          </Button>
         </div>
       </td>
     </>
@@ -141,8 +166,8 @@ export default function AdminUsersPage() {
   return (
     <div className="p-6">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Users</h1>
-        <p className="text-gray-600">Manage user accounts and permissions</p>
+        <h1 className="text-3xl font-bold text-text-primary">Users</h1>
+        <p className="text-text-secondary">Manage user accounts and permissions</p>
       </div>
       <DataTable
         data={users}
@@ -171,6 +196,17 @@ export default function AdminUsersPage() {
         bulkActions={bulkActions}
         renderRow={renderRow}
         emptyMessage="No users found"
+      />
+
+      <ConfirmDialog
+        isOpen={deleteDialog.isOpen}
+        onClose={() => setDeleteDialog({ isOpen: false, userId: '', userName: '' })}
+        onConfirm={handleDelete}
+        title="Delete User"
+        message={`Are you sure you want to delete "${deleteDialog.userName}"? This action cannot be undone.`}
+        confirmText="Delete"
+        variant="danger"
+        loading={deleting}
       />
     </div>
   )
