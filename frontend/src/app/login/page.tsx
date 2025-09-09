@@ -78,14 +78,6 @@ export default function LoginPage() {
               placeholder="Enter your email"
             />
             <Input
-              label="Phone number (optional)"
-              name="phone"
-              type="tel"
-              value={formData.phone}
-              onChange={handleChange}
-              placeholder="Enter your phone number"
-            />
-            <Input
               label="Password"
               name="password"
               type="password"

@@ -25,8 +25,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     // Get initial session
     const getInitialSession = async () => {
-      try {
-      }
       const { data: { session } } = await supabase.auth.getSession()
       if (session?.user) {
         await fetchUserProfile(session.user)
@@ -39,14 +37,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        if (session?.user) {
-          await fetchUserProfile(session.user)
-        } else {
-          setUser(null)
-        } else {
-          setUser(null)
-        }
-      } catch (error) {
         try {
           if (session?.user) {
             await fetchUserProfile(session.user)
@@ -62,7 +52,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             setInitialized(true)
           }
         }
-        setInitialized(true)
       }
     )
 

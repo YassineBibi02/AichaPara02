@@ -177,7 +177,7 @@ export function StoreFilters({ categories, currentFilters }: StoreFiltersProps) 
         </label>
         <select
           value={localFilters.sortBy}
-          onChange={(e) => setLocalFilters({ ...localFilters, sortBy: e.target.value })}
+          onChange={(e) => setLocalFilters({ ...localFilters, sortBy: e.target.value as 'rating' | 'newest' | 'price_asc' | 'price_desc' })}
           className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-pink-500 focus:outline-none focus:ring-1 focus:ring-pink-500"
         >
           <option value="newest">Newest</option>
