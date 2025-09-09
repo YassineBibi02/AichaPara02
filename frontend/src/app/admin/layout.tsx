@@ -11,13 +11,14 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/atoms/Button'
 import { Menu, X, Home, Users, Settings, BarChart3, LogOut } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { useAuth } from '@/lib/auth'
+import { useAuth } from '@/components/providers/auth-provider'
 
 const navigation = [
   { name: 'Dashboard', href: '/admin', icon: Home },
+  { name: 'Orders', href: '/admin/orders', icon: Package },
+  { name: 'Products', href: '/admin/products', icon: Package },
+  { name: 'Draft Products', href: '/admin/products/drafts', icon: FileText },
   { name: 'Users', href: '/admin/users', icon: Users },
-  { name: 'Settings', href: '/admin/settings', icon: Settings },
-  { name: 'Analytics', href: '/admin/analytics', icon: BarChart3 },
   { name: 'Settings', href: '/admin/settings', icon: Settings },
 ]
 

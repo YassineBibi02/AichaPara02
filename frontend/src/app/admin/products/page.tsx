@@ -148,7 +148,11 @@ export default function AdminProductsPage() {
       </td>
       <td className="px-4 py-4 text-right">
         <div className="flex items-center gap-2 justify-end">
-          <Button variant="outline" size="sm">
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => router.push(`/admin/products/${product.id}`)}
+          >
             <Eye className="w-4 h-4" />
           </Button>
           <Button variant="outline" size="sm">

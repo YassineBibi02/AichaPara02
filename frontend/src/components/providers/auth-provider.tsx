@@ -19,11 +19,13 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
+  const [initialized, setInitialized] = useState(false)
   const supabase = createClient()
 
   useEffect(() => {
     // Get initial session
     const getInitialSession = async () => {
+      try {
       const { data: { session } } = await supabase.auth.getSession()
       if (session?.user) {
         await fetchUserProfile(session.user)
@@ -40,8 +42,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           await fetchUserProfile(session.user)
         } else {
           setUser(null)
+        } else {
+          setUser(null)
         }
-        setLoading(false)
+      } catch (error) {
+        try {
+          if (session?.user) {
+            await fetchUserProfile(session.user)
+          } else {
+            setUser(null)
+          }
+        } catch (error) {
+          console.error('Error in auth state change:', error)
+          setUser(null)
+        } finally {
+          if (!initialized) {
+            setLoading(false)
+            setInitialized(true)
+          }
+        setInitialized(true)
       }
     )
 
@@ -65,9 +84,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           phone: profile.phone,
           role: profile.role,
         })
+      } else {
+        // Create profile if it doesn't exist
+        const { data: newProfile } = await supabase
+          .from('profiles')
+          .insert({
+            id: authUser.id,
+            first_name: authUser.user_metadata?.first_name,
+            last_name: authUser.user_metadata?.last_name,
+            phone: authUser.user_metadata?.phone,
+          })
+          .select()
+          .single()
+
+        if (newProfile) {
+          setUser({
+            id: authUser.id,
+            email: authUser.email!,
+            first_name: newProfile.first_name,
+            last_name: newProfile.last_name,
+            phone: newProfile.phone,
+            role: newProfile.role,
+          })
+        }
       }
     } catch (error) {
       console.error('Error fetching user profile:', error)
+      setUser(null)
     }
   }
 

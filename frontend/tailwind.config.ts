@@ -9,30 +9,35 @@ export default {
   theme: {
     extend: {
       colors: {
-        border: "hsl(214.3 31.8% 91.4%)",
-        input: "hsl(214.3 31.8% 91.4%)",
+        border: "hsl(220 13% 91%)",
+        input: "hsl(220 13% 91%)",
         ring: "hsl(346.8 77.2% 49.8%)",
         background: "hsl(0 0% 100%)",
-        foreground: "hsl(222.2 84% 4.9%)",
+        foreground: "hsl(224 71% 4%)",
+        text: {
+          primary: "hsl(224 71% 4%)",
+          secondary: "hsl(220 9% 46%)",
+          muted: "hsl(220 14% 96%)",
+        },
         primary: {
           DEFAULT: "hsl(346.8 77.2% 49.8%)",
           foreground: "hsl(355.7 100% 97.3%)",
         },
         secondary: {
-          DEFAULT: "hsl(210 40% 96%)",
-          foreground: "hsl(222.2 84% 4.9%)",
+          DEFAULT: "hsl(220 14% 96%)",
+          foreground: "hsl(224 71% 4%)",
         },
         destructive: {
           DEFAULT: "hsl(0 84.2% 60.2%)",
-          foreground: "hsl(210 40% 98%)",
+          foreground: "hsl(0 0% 98%)",
         },
         muted: {
-          DEFAULT: "hsl(210 40% 96%)",
-          foreground: "hsl(215.4 16.3% 46.9%)",
+          DEFAULT: "hsl(220 14% 96%)",
+          foreground: "hsl(220 9% 46%)",
         },
         accent: {
-          DEFAULT: "hsl(210 40% 96%)",
-          foreground: "hsl(222.2 84% 4.9%)",
+          DEFAULT: "hsl(220 14% 96%)",
+          foreground: "hsl(224 71% 4%)",
         },
         popover: {
           DEFAULT: "hsl(0 0% 100%)",

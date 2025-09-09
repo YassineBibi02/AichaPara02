@@ -5,7 +5,10 @@ import { Badge } from '@/components/ui/atoms/Badge'
 import { Button } from '@/components/ui/atoms/Button'
 import { Eye, Edit, Shield, Ban } from 'lucide-react'
 import { User } from '@/lib/types'
+import { useRouter } from 'next/navigation'
+
 export default function AdminUsersPage() {
+  const router = useRouter()
   const [users, setUsers] = useState<User[]>([])
   const [loading, setLoading] = useState(true)
   const [currentPage, setCurrentPage] = useState(1)
@@ -121,7 +124,11 @@ export default function AdminUsersPage() {
       </td>
       <td className="px-4 py-4 text-right">
         <div className="flex items-center gap-2 justify-end">
-          <Button variant="outline" size="sm">
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => router.push(`/admin/users/${user.id}`)}
+          >
             <Eye className="w-4 h-4" />
           </Button>
           <Button variant="outline" size="sm">

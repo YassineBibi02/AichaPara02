@@ -5,7 +5,10 @@ import { Badge } from '@/components/ui/atoms/Badge'
 import { Button } from '@/components/ui/atoms/Button'
 import { Eye, Download, Archive } from 'lucide-react'
 import { Order } from '@/lib/types'
+import { useRouter } from 'next/navigation'
+
 export default function AdminOrdersPage() {
+  const router = useRouter()
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
   const [currentPage, setCurrentPage] = useState(1)
@@ -122,7 +125,11 @@ export default function AdminOrdersPage() {
         {new Date(order.created_at).toLocaleDateString()}
       </td>
       <td className="px-4 py-4 text-right">
-        <Button variant="outline" size="sm">
+        <Button 
+          variant="outline" 
+          size="sm"
+          onClick={() => router.push(`/admin/orders/${order.id}`)}
+        >
           <Eye className="w-4 h-4 mr-2" />
           View
         </Button>
