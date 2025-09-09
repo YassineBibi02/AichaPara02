@@ -75,7 +75,7 @@ export default function AdminOrdersPage() {
   const fetchOrders = async () => {
     try {
       const data = await apiClient.get('/orders')
-      setOrders(data || [])
+      setOrders(Array.isArray(data) ? data : [])
     } catch (error) {
       console.error('Error fetching orders:', error)
     } finally {

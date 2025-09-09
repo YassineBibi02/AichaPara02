@@ -73,7 +73,7 @@ export default function AdminUsersPage() {
   const fetchUsers = async () => {
     try {
       const data = await apiClient.get('/profiles')
-      setUsers(data || [])
+      setUsers(Array.isArray(data) ? data : [])
     } catch (error) {
       console.error('Error fetching users:', error)
     } finally {

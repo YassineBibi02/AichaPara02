@@ -86,7 +86,7 @@ export default function AdminProductsPage() {
   }, [])
   const fetchProducts = async () => {
     try {
-      const data = await apiClient.get('/products')
+      const data = await apiClient.get('/products') as { data: Product[] }
       setProducts(data.data || [])
     } catch (error) {
       console.error('Error fetching products:', error)
@@ -138,7 +138,12 @@ export default function AdminProductsPage() {
               <div className="text-sm text-gray-400 line-through">{product.price.toFixed(2)} DT</div>
             </>
           ) : (
-            <div className="font-medium">{product.price.toFixed(2)} DT</div>
+            <div className="font-medium">
+              {typeof product.price === 'number'
+                ? product.price.toFixed(2)
+                : Number(product.price || 0).toFixed(2)
+              } DT
+            </div>
           )}
         </div>
       </td>
