@@ -26,6 +26,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Get initial session
     const getInitialSession = async () => {
       try {
+      }
       const { data: { session } } = await supabase.auth.getSession()
       if (session?.user) {
         await fetchUserProfile(session.user)
@@ -60,6 +61,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             setLoading(false)
             setInitialized(true)
           }
+        }
         setInitialized(true)
       }
     )
