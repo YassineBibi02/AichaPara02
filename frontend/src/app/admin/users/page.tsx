@@ -1,15 +1,170 @@
+'use client'
+import { useState, useEffect } from 'react'
+import { DataTable } from '@/components/ui/organisms/DataTable'
+import { Badge } from '@/components/ui/atoms/Badge'
+import { Button } from '@/components/ui/atoms/Button'
+import { Eye, Edit, Shield, Ban } from 'lucide-react'
+import { User } from '@/lib/types'
 export default function AdminUsersPage() {
+  const [users, setUsers] = useState<User[]>([])
+  const [loading, setLoading] = useState(true)
+  const [currentPage, setCurrentPage] = useState(1)
+  const [pageSize, setPageSize] = useState(10)
+  const [sortColumn, setSortColumn] = useState('created_at')
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc')
+  const [filterValues, setFilterValues] = useState<Record<string, string>>({})
+  const columns = [
+    { key: 'name', label: 'Name', sortable: true },
+    { key: 'email', label: 'Email', sortable: true },
+    { key: 'phone', label: 'Phone' },
+    { key: 'role', label: 'Role', sortable: true },
+    { key: 'created_at', label: 'Joined', sortable: true },
+    { key: 'actions', label: 'Actions', align: 'right' as const },
+  ]
+  const filters = [
+    {
+      key: 'search',
+      label: 'Search',
+      type: 'text' as const,
+      placeholder: 'Search users...'
+    },
+    {
+      key: 'role',
+      label: 'Role',
+      type: 'select' as const,
+      options: [
+        { value: 'client', label: 'Client' },
+        { value: 'admin', label: 'Admin' },
+        { value: 'superadmin', label: 'Super Admin' },
+      ]
+    }
+  ]
+  const bulkActions = [
+    {
+      key: 'promote',
+      label: 'Promote to Admin',
+      icon: Shield,
+      variant: 'outline' as const,
+      onClick: (selectedIds: string[]) => {
+        console.log('Promote users:', selectedIds)
+      }
+    },
+    {
+      key: 'ban',
+      label: 'Ban Users',
+      icon: Ban,
+      variant: 'destructive' as const,
+      onClick: (selectedIds: string[]) => {
+        console.log('Ban users:', selectedIds)
+      }
+    }
+  ]
+  useEffect(() => {
+    // Mock users data
+    const mockUsers: User[] = [
+      {
+        id: '1',
+        email: 'john@example.com',
+        first_name: 'John',
+        last_name: 'Doe',
+        phone: '+216 12 345 678',
+        role: 'client'
+      },
+      {
+        id: '2',
+        email: 'admin@aichapara.tn',
+        first_name: 'Admin',
+        last_name: 'User',
+        phone: '+216 98 765 432',
+        role: 'admin'
+      }
+    ]
+    
+    setTimeout(() => {
+      setUsers(mockUsers)
+      setLoading(false)
+    }, 1000)
+  }, [])
+  const getRoleColor = (role: string) => {
+    switch (role) {
+      case 'superadmin': return 'bg-purple-100 text-purple-800'
+      case 'admin': return 'bg-blue-100 text-blue-800'
+      case 'client': return 'bg-gray-100 text-gray-800'
+      default: return 'bg-gray-100 text-gray-800'
+    }
+  }
+  const renderRow = (user: User) => (
+    <>
+      <td className="px-4 py-4">
+        <div className="flex items-center">
+          <div className="w-10 h-10 bg-pink-500 rounded-full flex items-center justify-center text-white font-medium mr-3">
+            {user.first_name?.[0] || user.email[0].toUpperCase()}
+          </div>
+          <div>
+            <div className="font-medium">{user.first_name} {user.last_name}</div>
+          </div>
+        </div>
+      </td>
+      <td className="px-4 py-4 text-sm text-gray-900">
+        {user.email}
+      </td>
+      <td className="px-4 py-4 text-sm text-gray-500">
+        {user.phone || '-'}
+      </td>
+      <td className="px-4 py-4">
+        <Badge className={getRoleColor(user.role)}>
+          {user.role}
+        </Badge>
+      </td>
+      <td className="px-4 py-4 text-sm text-gray-500">
+        {new Date().toLocaleDateString()}
+      </td>
+      <td className="px-4 py-4 text-right">
+        <div className="flex items-center gap-2 justify-end">
+          <Button variant="outline" size="sm">
+            <Eye className="w-4 h-4" />
+          </Button>
+          <Button variant="outline" size="sm">
+            <Edit className="w-4 h-4" />
+          </Button>
+        </div>
+      </td>
+    </>
+  )
   return (
     <div className="p-6">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900">Users</h1>
-        <p className="text-gray-600">Manage user accounts</p>
+        <p className="text-gray-600">Manage user accounts and permissions</p>
       </div>
-      
-      <div className="bg-white rounded-lg border p-8 text-center">
-        <h2 className="text-xl font-semibold text-gray-900 mb-2">User Management</h2>
-        <p className="text-gray-600">User management interface will be implemented here.</p>
-      </div>
+      <DataTable
+        data={users}
+        columns={columns}
+        loading={loading}
+        currentPage={currentPage}
+        totalPages={Math.ceil(users.length / pageSize)}
+        pageSize={pageSize}
+        totalItems={users.length}
+        onPageChange={setCurrentPage}
+        onPageSizeChange={setPageSize}
+        sortColumn={sortColumn}
+        sortDirection={sortDirection}
+        onSort={(column) => {
+          if (sortColumn === column) {
+            setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')
+          } else {
+            setSortColumn(column)
+            setSortDirection('asc')
+          }
+        }}
+        filters={filters}
+        filterValues={filterValues}
+        onFilterChange={(key, value) => setFilterValues(prev => ({ ...prev, [key]: value }))}
+        onFilterClear={() => setFilterValues({})}
+        bulkActions={bulkActions}
+        renderRow={renderRow}
+        emptyMessage="No users found"
+      />
     </div>
   )
 }

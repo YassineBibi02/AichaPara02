@@ -5,16 +5,18 @@ Since the original file is empty, applying this diff would result in the complet
 'use client'
 
 import { useState } from 'react'
+  Settings,
 import { usePathname } from 'next/navigation'
 import Link from 'next/link'
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/ui/atoms/Button'
 import { Menu, X, Home, Users, Settings, BarChart3, LogOut } from 'lucide-react'
-import { clsx } from 'clsx'
+import { cn } from '@/lib/utils'
 import { useAuth } from '@/lib/auth'
 
 const navigation = [
   { name: 'Dashboard', href: '/admin', icon: Home },
   { name: 'Users', href: '/admin/users', icon: Users },
+  { name: 'Settings', href: '/admin/settings', icon: Settings },
   { name: 'Analytics', href: '/admin/analytics', icon: BarChart3 },
   { name: 'Settings', href: '/admin/settings', icon: Settings },
 ]
@@ -67,7 +69,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                     <Link
                       key={item.name}
                       href={item.href}
-                      className={clsx(
+                      className={cn(
                         isActive
                           ? 'bg-pink-100 text-pink-900'
                           : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900',
@@ -76,7 +78,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                       onClick={() => setSidebarOpen(false)}
                     >
                       <item.icon
-                        className={clsx(
+                        className={cn(
                           isActive ? 'text-pink-500' : 'text-gray-400 group-hover:text-gray-500',
                           'mr-3 flex-shrink-0 h-6 w-6'
                         )}
@@ -131,7 +133,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                     )}
                   >
                     <item.icon
-                      className={clsx(
+                      className={cn(
                         isActive ? 'text-pink-500' : 'text-gray-400 group-hover:text-gray-500',
                         'mr-3 flex-shrink-0 h-6 w-6'
                       )}

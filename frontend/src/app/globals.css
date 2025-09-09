@@ -1,5 +1,9 @@
 @import "tailwindcss";
 
+:root {
+  --radius: 0.5rem;
+}
+
 body {
   background: #ffffff;
   color: #171717;

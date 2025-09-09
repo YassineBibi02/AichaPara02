@@ -1,9 +1,14 @@
 import { Injectable, CanActivate, ExecutionContext, UnauthorizedException } from '@nestjs/common';
-import { SupabaseService } from '../config/supabase.config';
+import { createClient } from '@supabase/supabase-js';
+import { ConfigService } from '@nestjs/config';
+import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
-  constructor(private supabaseService: SupabaseService) {}
+  constructor(
+    private configService: ConfigService,
+    private prisma: PrismaService,
+  ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
@@ -14,7 +19,11 @@ export class AuthGuard implements CanActivate {
     }
 
     try {
-      const supabase = this.supabaseService.getClient();
+      const supabase = createClient(
+        this.configService.get<string>('SUPABASE_URL')!,
+        this.configService.get<string>('SUPABASE_SERVICE_ROLE_KEY')!,
+      );
+      
       const { data: { user }, error } = await supabase.auth.getUser(token);
 
       if (error || !user) {
@@ -22,16 +31,18 @@ export class AuthGuard implements CanActivate {
       }
 
       // Get user profile with role
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', user.id)
-        .single();
+      const profile = await this.prisma.profile.findUnique({
+        where: { id: user.id },
+        select: { role: true, firstName: true, lastName: true, phone: true },
+      });
 
       request.user = {
         id: user.id,
         email: user.email,
         role: profile?.role || 'client',
+        firstName: profile?.firstName,
+        lastName: profile?.lastName,
+        phone: profile?.phone,
       };
 
       return true;

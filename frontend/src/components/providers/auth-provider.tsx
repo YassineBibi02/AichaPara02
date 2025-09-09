@@ -9,7 +9,6 @@ interface AuthContextType {
   user: User | null
   loading: boolean
   signIn: (email: string, password: string) => Promise<{ error?: string }>
-  signUp: (email: string, password: string, firstName: string, lastName: string) => Promise<{ error?: string }>
   signUp: (email: string, password: string, firstName: string, lastName: string, phone?: string) => Promise<{ error?: string }>
   signOut: () => Promise<void>
   updateProfile: (updates: Partial<User>) => Promise<{ error?: string }>
