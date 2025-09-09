@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/atoms/Button'
 import { ConfirmDialog } from '@/components/ui/organisms/ConfirmDialog'
 import { Eye, Edit, Shield, Ban } from 'lucide-react'
 import { User } from '@/lib/types'
+import { apiClient } from '@/lib/api'
 
 export default function AdminUsersPage() {
   const router = useRouter()
@@ -71,8 +72,7 @@ export default function AdminUsersPage() {
   ]
   const fetchUsers = async () => {
     try {
-      const response = await fetch('/api/profiles')
-      const data = await response.json()
+      const data = await apiClient.get('/profiles')
       setUsers(data || [])
     } catch (error) {
       console.error('Error fetching users:', error)
@@ -86,14 +86,9 @@ export default function AdminUsersPage() {
   const handleDelete = async () => {
     setDeleting(true)
     try {
-      const response = await fetch(`/api/profiles/${deleteDialog.userId}`, {
-        method: 'DELETE',
-      })
-      
-      if (response.ok) {
-        setUsers(users.filter(u => u.id !== deleteDialog.userId))
-        setDeleteDialog({ isOpen: false, userId: '', userName: '' })
-      }
+      await apiClient.delete(`/profiles/${deleteDialog.userId}`)
+      setUsers(users.filter(u => u.id !== deleteDialog.userId))
+      setDeleteDialog({ isOpen: false, userId: '', userName: '' })
     } catch (error) {
       console.error('Error deleting user:', error)
     } finally {

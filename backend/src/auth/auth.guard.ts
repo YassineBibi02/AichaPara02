@@ -1,7 +1,16 @@
 import { Injectable, CanActivate, ExecutionContext, UnauthorizedException } from '@nestjs/common';
-import { createClient } from '@supabase/supabase-js';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../prisma/prisma.service';
+import * as jwt from 'jsonwebtoken';
+
+interface SupabaseJwtPayload {
+  sub: string;
+  email: string;
+  aud: string;
+  role: string;
+  iat: number;
+  exp: number;
+}
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -19,34 +28,58 @@ export class AuthGuard implements CanActivate {
     }
 
     try {
-      const supabase = createClient(
-        this.configService.get<string>('SUPABASE_URL')!,
-        this.configService.get<string>('SUPABASE_SERVICE_ROLE_KEY')!,
-      );
-      
-      const { data: { user }, error } = await supabase.auth.getUser(token);
-
-      if (error || !user) {
-        throw new UnauthorizedException('Invalid token');
+      // Verify JWT using Supabase JWT secret
+      const jwtSecret = this.configService.get<string>('SUPABASE_JWT_SECRET');
+      if (!jwtSecret) {
+        throw new UnauthorizedException('JWT secret not configured');
       }
 
-      // Get user profile with role
+      const payload = jwt.verify(token, jwtSecret) as SupabaseJwtPayload;
+
+      // Check if token is expired
+      if (payload.exp * 1000 < Date.now()) {
+        throw new UnauthorizedException('Token expired');
+      }
+
+      // Get user profile with role from database
       const profile = await this.prisma.profile.findUnique({
-        where: { id: user.id },
-        select: { role: true, firstName: true, lastName: true, phone: true },
+        where: { id: payload.sub },
+        select: { 
+          id: true,
+          firstName: true, 
+          lastName: true, 
+          phone: true, 
+          role: true 
+        },
       });
 
+      if (!profile) {
+        throw new UnauthorizedException('User profile not found');
+      }
+
+      // Attach user info to request
       request.user = {
-        id: user.id,
-        email: user.email,
-        role: profile?.role || 'client',
-        firstName: profile?.firstName,
-        lastName: profile?.lastName,
-        phone: profile?.phone,
+        id: payload.sub,
+        email: payload.email,
+        role: profile.role,
+        firstName: profile.firstName,
+        lastName: profile.lastName,
+        phone: profile.phone,
       };
 
       return true;
     } catch (error) {
+      if (error instanceof jwt.JsonWebTokenError) {
+        throw new UnauthorizedException('Invalid token');
+      }
+      if (error instanceof jwt.TokenExpiredError) {
+        throw new UnauthorizedException('Token expired');
+      }
+      if (error instanceof UnauthorizedException) {
+        throw error;
+      }
+      
+      console.error('Authentication error:', error);
       throw new UnauthorizedException('Authentication failed');
     }
   }

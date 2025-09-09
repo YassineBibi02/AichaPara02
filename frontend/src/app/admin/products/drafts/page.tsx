@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/atoms/Button'
 import { ConfirmDialog } from '@/components/ui/organisms/ConfirmDialog'
 import { Eye, Edit, Trash2, CheckCircle } from 'lucide-react'
 import { Product } from '@/lib/types'
+import { apiClient } from '@/lib/api'
 
 export default function DraftProductsPage() {
   const router = useRouter()
@@ -80,8 +81,7 @@ export default function DraftProductsPage() {
 
   const fetchDraftProducts = async () => {
     try {
-      const response = await fetch('/api/products/drafts')
-      const data = await response.json()
+      const data = await apiClient.get('/products/drafts')
       setProducts(data.data || [])
     } catch (error) {
       console.error('Error fetching draft products:', error)
@@ -93,14 +93,9 @@ export default function DraftProductsPage() {
   const handleDelete = async () => {
     setDeleting(true)
     try {
-      const response = await fetch(`/api/products/${deleteDialog.productId}`, {
-        method: 'DELETE',
-      })
-      
-      if (response.ok) {
-        setProducts(products.filter(p => p.id !== deleteDialog.productId))
-        setDeleteDialog({ isOpen: false, productId: '', productName: '' })
-      }
+      await apiClient.delete(`/products/${deleteDialog.productId}`)
+      setProducts(products.filter(p => p.id !== deleteDialog.productId))
+      setDeleteDialog({ isOpen: false, productId: '', productName: '' })
     } catch (error) {
       console.error('Error deleting product:', error)
     } finally {

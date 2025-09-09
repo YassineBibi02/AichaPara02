@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/components/providers/auth-provider'
 import { Package, ShoppingCart, Users, TrendingUp } from 'lucide-react'
+import { apiClient } from '@/lib/api'
 
 interface DashboardStats {
   totalProducts: number
@@ -31,14 +32,20 @@ export default function AdminDashboard() {
 
   const fetchDashboardStats = async () => {
     try {
-      // This would typically fetch from your API
-      // For now, we'll use mock data
+      const [products, orders, users] = await Promise.all([
+        apiClient.get('/products'),
+        apiClient.get('/orders'),
+        apiClient.get('/profiles')
+      ])
+      
+      const totalRevenue = orders.reduce((sum: number, order: any) => sum + order.total, 0)
+      
       setStats({
-        totalProducts: 8,
-        totalOrders: 24,
-        totalUsers: 156,
-        totalRevenue: 12450.75,
-        recentOrders: [],
+        totalProducts: products.data?.length || 0,
+        totalOrders: orders.length || 0,
+        totalUsers: users.length || 0,
+        totalRevenue: totalRevenue || 0,
+        recentOrders: orders.slice(0, 5) || [],
       })
     } catch (error) {
       console.error('Failed to fetch dashboard stats:', error)

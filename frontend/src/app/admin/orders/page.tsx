@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/atoms/Button'
 import { ConfirmDialog } from '@/components/ui/organisms/ConfirmDialog'
 import { Eye, Download, Archive } from 'lucide-react'
 import { Order } from '@/lib/types'
+import { apiClient } from '@/lib/api'
 
 export default function AdminOrdersPage() {
   const router = useRouter()
@@ -73,8 +74,7 @@ export default function AdminOrdersPage() {
   ]
   const fetchOrders = async () => {
     try {
-      const response = await fetch('/api/orders')
-      const data = await response.json()
+      const data = await apiClient.get('/orders')
       setOrders(data || [])
     } catch (error) {
       console.error('Error fetching orders:', error)
@@ -89,14 +89,9 @@ export default function AdminOrdersPage() {
   const handleDelete = async () => {
     setDeleting(true)
     try {
-      const response = await fetch(`/api/orders/${deleteDialog.orderId}`, {
-        method: 'DELETE',
-      })
-      
-      if (response.ok) {
-        setOrders(orders.filter(o => o.id !== deleteDialog.orderId))
-        setDeleteDialog({ isOpen: false, orderId: '', orderNumber: '' })
-      }
+      await apiClient.delete(`/orders/${deleteDialog.orderId}`)
+      setOrders(orders.filter(o => o.id !== deleteDialog.orderId))
+      setDeleteDialog({ isOpen: false, orderId: '', orderNumber: '' })
     } catch (error) {
       console.error('Error deleting order:', error)
     } finally {
