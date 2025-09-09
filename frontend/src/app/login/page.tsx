@@ -10,12 +10,11 @@ import { Input } from '@/components/ui/input'
 export default function LoginPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const { signIn } = useAuth()
+  const { signIn, loading: authLoading } = useAuth()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [formData, setFormData] = useState({
     email: '',
-    phone: '',
     password: '',
   })
 
@@ -23,6 +22,8 @@ export default function LoginPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (loading || authLoading) return
+    
     setLoading(true)
     setError('')
 
@@ -32,7 +33,10 @@ export default function LoginPage() {
       setError(error)
       setLoading(false)
     } else {
-      router.push(redirectTo)
+      // Small delay to ensure auth state is updated
+      setTimeout(() => {
+        router.push(redirectTo)
+      }, 100)
     }
   }
 
@@ -43,6 +47,8 @@ export default function LoginPage() {
     })
   }
 
+  // Show loading if either local loading or auth loading
+  const isLoading = loading || authLoading
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
@@ -76,6 +82,7 @@ export default function LoginPage() {
               value={formData.email}
               onChange={handleChange}
               placeholder="Enter your email"
+              disabled={isLoading}
             />
             <Input
               label="Password"
@@ -86,6 +93,7 @@ export default function LoginPage() {
               value={formData.password}
               onChange={handleChange}
               placeholder="Enter your password"
+              disabled={isLoading}
             />
           </div>
 
@@ -99,7 +107,8 @@ export default function LoginPage() {
 
           <Button
             type="submit"
-            loading={loading}
+            loading={isLoading}
+            disabled={isLoading}
             className="w-full"
             size="lg"
           >

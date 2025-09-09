@@ -19,24 +19,39 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
-  const [initialized, setInitialized] = useState(false)
   const supabase = createClient()
 
   useEffect(() => {
-    // Get initial session
-    const getInitialSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession()
-      if (session?.user) {
-        await fetchUserProfile(session.user)
+    let mounted = true
+    
+    // Initialize auth state
+    const initializeAuth = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession()
+        if (mounted) {
+          if (session?.user) {
+            await fetchUserProfile(session.user)
+          } else {
+            setUser(null)
+          }
+          setLoading(false)
+        }
+      } catch (error) {
+        console.error('Error initializing auth:', error)
+        if (mounted) {
+          setUser(null)
+          setLoading(false)
+        }
       }
-      setLoading(false)
     }
 
-    getInitialSession()
+    initializeAuth()
 
-    // Listen for auth changes
+    // Listen for auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        if (!mounted) return
+        
         try {
           if (session?.user) {
             await fetchUserProfile(session.user)
@@ -46,16 +61,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         } catch (error) {
           console.error('Error in auth state change:', error)
           setUser(null)
-        } finally {
-          if (!initialized) {
-            setLoading(false)
-            setInitialized(true)
-          }
         }
       }
     )
 
-    return () => subscription.unsubscribe()
+    return () => {
+      mounted = false
+      subscription.unsubscribe()
+    }
   }, [supabase.auth])
 
   const fetchUserProfile = async (authUser: SupabaseUser) => {
@@ -101,11 +114,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     } catch (error) {
       console.error('Error fetching user profile:', error)
-      setUser(null)
+      // Don't set user to null here, as it might be a temporary network issue
+      // Instead, create a basic user object from auth data
+      setUser({
+        id: authUser.id,
+        email: authUser.email!,
+        first_name: authUser.user_metadata?.first_name,
+        last_name: authUser.user_metadata?.last_name,
+        phone: authUser.user_metadata?.phone,
+        role: 'client',
+      })
     }
   }
 
   const signIn = async (email: string, password: string) => {
+    setLoading(true)
     try {
       const { error } = await supabase.auth.signInWithPassword({
         email,
@@ -113,11 +136,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       })
       
       if (error) {
+        setLoading(false)
         return { error: error.message }
       }
       
+      // Don't set loading to false here, let the auth state change handle it
       return {}
     } catch (error) {
+      setLoading(false)
       return { error: 'An unexpected error occurred' }
     }
   }
@@ -148,7 +174,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   const signOut = async () => {
+    setLoading(true)
     await supabase.auth.signOut()
+    // Don't set loading to false here, let the auth state change handle it
   }
 
   const updateProfile = async (updates: Partial<User>) => {

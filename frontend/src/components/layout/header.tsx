@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button'
 import { MiniCart } from '@/components/cart/mini-cart'
 
 export function Header() {
-  const { user, signOut } = useAuth()
+  const { user, signOut, loading } = useAuth()
   const [cartCount, setCartCount] = useState(0)
   const [showMiniCart, setShowMiniCart] = useState(false)
   const [showUserMenu, setShowUserMenu] = useState(false)
@@ -36,6 +36,10 @@ export function Header() {
     }
   }
 
+  const handleSignOut = async () => {
+    setShowUserMenu(false)
+    await signOut()
+  }
   return (
     <header className="bg-white shadow-sm border-b">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -99,7 +103,9 @@ export function Header() {
             </div>
 
             {/* User Menu */}
-            {user ? (
+            {loading ? (
+              <div className="w-8 h-8 bg-gray-200 rounded-full animate-pulse"></div>
+            ) : user ? (
               <div className="relative">
                 <button
                   onClick={() => setShowUserMenu(!showUserMenu)}
@@ -141,10 +147,7 @@ export function Header() {
                       </Link>
                     )}
                     <button
-                      onClick={() => {
-                        signOut()
-                        setShowUserMenu(false)
-                      }}
+                      onClick={handleSignOut}
                       className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
                     >
                       Sign Out
@@ -226,7 +229,7 @@ export function Header() {
               </nav>
 
               {/* Mobile Auth */}
-              {!user && (
+              {!loading && !user && (
                 <div className="space-y-2 pt-4 border-t">
                   <Link href="/login" onClick={() => setShowMobileMenu(false)}>
                     <Button variant="ghost" className="w-full justify-start">
