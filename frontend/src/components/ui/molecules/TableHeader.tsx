@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 import { Checkbox } from '../atoms/Checkbox';
 import { SortIndicator } from '../atoms/SortIndicator';
@@ -66,7 +68,7 @@ export const TableHeader: React.FC<TableHeaderProps> = ({
               <span>{column.label}</span>
               {column.sortable && (
                 <SortIndicator
-                  direction={sortColumn === column.key ? sortDirection : null}
+                  direction={sortColumn === column.key ? sortDirection ?? null : null}
                 />
               )}
             </div>

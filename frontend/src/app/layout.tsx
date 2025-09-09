@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+'use client'
 import { Geist, Geist_Mono } from "next/font/google";
 import { usePathname } from "next/navigation";
 import { AuthProvider } from "@/components/providers/auth-provider";
@@ -43,4 +43,3 @@ export default function RootLayout({
     </html>
   );
 }
-'use client'

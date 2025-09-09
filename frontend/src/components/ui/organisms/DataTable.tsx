@@ -1,3 +1,4 @@
+'use client';
 import React, { useState, useMemo } from 'react';
 import { TableHeader, Column } from '../molecules/TableHeader';
 import { TableRow } from '../molecules/TableRow';

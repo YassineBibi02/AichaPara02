@@ -69,10 +69,6 @@ export default function AdminUsersPage() {
       }
     }
   ]
-  useEffect(() => {
-    fetchUsers()
-  }, [])
-  const getRoleColor = (role: string) => {
   const fetchUsers = async () => {
     try {
       const response = await fetch('/api/profiles')
@@ -84,7 +80,9 @@ export default function AdminUsersPage() {
       setLoading(false)
     }
   }
-
+  useEffect(() => {
+    fetchUsers()
+  }, [])
   const handleDelete = async () => {
     setDeleting(true)
     try {
@@ -103,6 +101,7 @@ export default function AdminUsersPage() {
     }
   }
 
+  const getRoleColor = (role: string) => {
     switch (role) {
       case 'superadmin': return 'bg-purple-100 text-purple-800'
       case 'admin': return 'bg-blue-100 text-blue-800'

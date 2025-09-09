@@ -71,10 +71,6 @@ export default function AdminOrdersPage() {
       }
     }
   ]
-  useEffect(() => {
-    fetchOrders()
-  }, [])
-  const getStatusColor = (status: string) => {
   const fetchOrders = async () => {
     try {
       const response = await fetch('/api/orders')
@@ -87,6 +83,9 @@ export default function AdminOrdersPage() {
     }
   }
 
+  useEffect(() => {
+    fetchOrders()
+  }, [])
   const handleDelete = async () => {
     setDeleting(true)
     try {
@@ -105,6 +104,7 @@ export default function AdminOrdersPage() {
     }
   }
 
+  const getStatusColor = (status: string) => {
     switch (status) {
       case 'PENDING': return 'bg-yellow-100 text-yellow-800'
       case 'PAID': return 'bg-blue-100 text-blue-800'
